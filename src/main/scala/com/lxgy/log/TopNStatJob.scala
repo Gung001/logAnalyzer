@@ -28,10 +28,13 @@ object TopNStatJob {
     //    accessDF.show(false)
 
     // 最受欢迎的topN课程
-    // videoAccessTopNStat(spark, accessDF)
+    videoAccessTopNStat(spark, accessDF)
 
     // 按照地市统计topN课程
     cityAccessTopNStat(spark, accessDF)
+
+    // 按照流量统计topN课程
+    videoTrafficsTopNStat(spark, accessDF)
 
     spark.stop()
   }
@@ -97,12 +100,12 @@ object TopNStatJob {
     // Window 函数在SparkSQL中的使用
     val resultDF = cityAccessTopN
       .select(
-      cityAccessTopN("day"),
-      cityAccessTopN("city"),
-      cityAccessTopN("cmsId"),
-      cityAccessTopN("times"),
-      row_number().over(Window.partitionBy(cityAccessTopN("city")).orderBy(cityAccessTopN("times").desc)).as("times_rank")
-    )
+        cityAccessTopN("day"),
+        cityAccessTopN("city"),
+        cityAccessTopN("cmsId"),
+        cityAccessTopN("times"),
+        row_number().over(Window.partitionBy(cityAccessTopN("city")).orderBy(cityAccessTopN("times").desc)).as("times_rank")
+      )
       .filter("times_rank <= 3")
 
     // 数据写入MySQL
@@ -126,7 +129,37 @@ object TopNStatJob {
 
 
     })
-
   }
 
+  /**
+    * 按照流量统计
+    *
+    * @param spark
+    * @param accessDF
+    */
+  def videoTrafficsTopNStat(spark: SparkSession, accessDF: DataFrame) = {
+
+    import spark.implicits._
+    val trafficsAccessTopN = accessDF
+      .filter(s"day = '20170511' and cmsType = 'video'")
+      .groupBy("day", "cmsId")
+      .agg(sum("traffic").as("traffics"))
+      .orderBy($"traffics".desc)
+    //      .show(false)
+
+    // 数据写入MySQL
+    trafficsAccessTopN.foreachPartition(record => {
+      val list = new ListBuffer[DayVideoTrafficsAccessStat]
+
+      record.foreach(r => {
+        val day = r.getAs[String]("day")
+        val cmsId = r.getAs[Long]("cmsId")
+        val traffics = r.getAs[Long]("traffics")
+
+        list.append(DayVideoTrafficsAccessStat(day, cmsId, traffics))
+      })
+
+      StatDao.insertVideoTrafficsAccessTopN(list)
+    })
+  }
 }
