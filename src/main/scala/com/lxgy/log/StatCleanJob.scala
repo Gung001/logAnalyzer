@@ -16,7 +16,9 @@ object StatCleanJob {
       .builder()
       .appName("StatCleanJob")
 //      .config("spark.sql.warehouse.dir", warehouseLocation)
-      .enableHiveSupport()
+//      .enableHiveSupport()
+      // 压缩格式调节
+      .config("spark.sql.parquet.compression.codec","gzip")
       .master("local[2]")
       .getOrCreate()
 
