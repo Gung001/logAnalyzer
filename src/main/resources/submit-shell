@@ -17,7 +17,7 @@ spark-submit \
 hdfs://data01:8020/spark/data/access.log hdfs://data01:8020/spark/data/output/access_clean1
 
 
-# 作业提交到yarn上运行（需要依赖第三方文件）
+# 清洗作业提交到yarn上运行（需要依赖第三方文件）
 spark-submit \
 --class com.lxgy.log.StatCleanJobYarn \
 --name StatCleanJobYarn \
@@ -27,6 +27,17 @@ spark-submit \
 --files /opt/datas/spark2.0/ipDatabase.csv,/opt/datas/spark2.0/ipRegion.xlsx \
 /opt/datas/spark2.0/logAnalyzer-1.0-SNAPSHOT-jar-with-dependencies.jar \
 hdfs://data01:8020/spark/data/access.log hdfs://data01:8020/spark/data/output/access_clean2
+
+
+# 统计作业提交到yarn上运行
+spark-submit \
+--class com.lxgy.log.TopNStatJobYarn \
+--name TopNStatJobYarn \
+--master yarn \
+--executor-memory 1G \
+--num-executors 1 \
+/opt/datas/spark2.0/logAnalyzer-1.0-SNAPSHOT-jar-with-dependencies.jar \
+hdfs://data01:8020/spark/data/output/access_clean1 20170511
 
 
 
