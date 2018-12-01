@@ -18,6 +18,8 @@ object TopNStatJob {
       .appName("StatCleanJob")
       // 调整分区字段数类型，默认true
       .config("spark.sql.sources.partitionColumnTypeInference.enabled", false)
+      // 设置分区个数，默认200
+      .config("spark.sql.shuffle.partitions", 100)
       .enableHiveSupport()
       .master("local[2]")
       .getOrCreate()
