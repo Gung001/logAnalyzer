@@ -27,14 +27,19 @@ object TopNStatJob {
     //    accessDF.printSchema()
     //    accessDF.show(false)
 
+    val currentDay = "20170511"
+
+    // 删除当天的数据
+    StatDao.deleteData(currentDay)
+
     // 最受欢迎的topN课程
-    videoAccessTopNStat(spark, accessDF)
+    videoAccessTopNStat(spark, accessDF, currentDay)
 
     // 按照地市统计topN课程
-    cityAccessTopNStat(spark, accessDF)
+    cityAccessTopNStat(spark, accessDF, currentDay)
 
     // 按照流量统计topN课程
-    videoTrafficsTopNStat(spark, accessDF)
+    videoTrafficsTopNStat(spark, accessDF, currentDay)
 
     spark.stop()
   }
@@ -45,7 +50,7 @@ object TopNStatJob {
     * @param spark
     * @param accessDF
     */
-  def videoAccessTopNStat(spark: SparkSession, accessDF: DataFrame) = {
+  def videoAccessTopNStat(spark: SparkSession, accessDF: DataFrame, currentDay: String) = {
 
     // 方式一：使用 DSL 语法实现
     //    import spark.implicits._
@@ -58,12 +63,12 @@ object TopNStatJob {
     accessDF.createOrReplaceTempView("access_log_tmp")
 
     val videoAccessTopN = spark.sql(
-      """
-        | select day,cmsId,count(0) times
-        | from access_log_tmp
-        | where day = '20170511' and cmsType = 'video'
-        | group by day,cmsId
-        | order by times desc
+      s"""
+         | select day,cmsId,count(0) times
+         | from access_log_tmp
+         | where day = '$currentDay' and cmsType = 'video'
+         | group by day,cmsId
+         | order by times desc
       """.stripMargin)
 
     videoAccessTopN.show(false)
@@ -90,10 +95,10 @@ object TopNStatJob {
     * @param spark
     * @param accessDF
     */
-  def cityAccessTopNStat(spark: SparkSession, accessDF: DataFrame) = {
+  def cityAccessTopNStat(spark: SparkSession, accessDF: DataFrame, currentDay: String) = {
 
     val cityAccessTopN = accessDF
-      .filter(s"day = '20170511' and cmsType = 'video'")
+      .filter(s"day = '$currentDay' and cmsType = 'video'")
       .groupBy("day", "city", "cmsId")
       .agg(count("cmsId").as("times"))
 
@@ -137,11 +142,11 @@ object TopNStatJob {
     * @param spark
     * @param accessDF
     */
-  def videoTrafficsTopNStat(spark: SparkSession, accessDF: DataFrame) = {
+  def videoTrafficsTopNStat(spark: SparkSession, accessDF: DataFrame, currentDay: String) = {
 
     import spark.implicits._
     val trafficsAccessTopN = accessDF
-      .filter(s"day = '20170511' and cmsType = 'video'")
+      .filter(s"day = '$currentDay' and cmsType = 'video'")
       .groupBy("day", "cmsId")
       .agg(sum("traffic").as("traffics"))
       .orderBy($"traffics".desc)
