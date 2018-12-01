@@ -37,21 +37,21 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.11</artifactId>
       <version>${spark.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <!-- Spark SQL -->
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_2.11</artifactId>
       <version>${spark.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <!-- Spark Streaming -->
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-streaming_2.11</artifactId>
       <version>${spark.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Spark hive -->
@@ -59,7 +59,7 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-hive_2.11</artifactId>
       <version>${spark.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
 
     <!-- HDFS Client -->
@@ -67,7 +67,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
       <version>${hadoop.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -118,12 +118,7 @@
       <artifactId>poi</artifactId>
       <version>3.14</version>
     </dependency>
-
-
-
   </dependencies>
-
-
 
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
@@ -162,6 +157,18 @@
             <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
             <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
           </classpathContainers>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass></mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>jar-with-dependencies</descriptorRefs>
         </configuration>
       </plugin>
     </plugins>
