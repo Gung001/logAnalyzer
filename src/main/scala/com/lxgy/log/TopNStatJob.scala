@@ -32,14 +32,21 @@ object TopNStatJob {
     // 删除当天的数据
     StatDao.deleteData(currentDay)
 
+    // commonDF
+    val commonDF = accessDF.filter(s"day = '$currentDay' and cmsType = 'video'")
+
+    commonDF.cache()
+
     // 最受欢迎的topN课程
-    videoAccessTopNStat(spark, accessDF, currentDay)
+    videoAccessTopNStat(spark, commonDF)
 
     // 按照地市统计topN课程
-    cityAccessTopNStat(spark, accessDF, currentDay)
+    cityAccessTopNStat(spark, commonDF)
 
     // 按照流量统计topN课程
-    videoTrafficsTopNStat(spark, accessDF, currentDay)
+    videoTrafficsTopNStat(spark, commonDF)
+
+    commonDF.unpersist(true)
 
     spark.stop()
   }
@@ -48,28 +55,26 @@ object TopNStatJob {
     * 最受欢迎的topN课程
     *
     * @param spark
-    * @param accessDF
+    * @param commonDF
     */
-  def videoAccessTopNStat(spark: SparkSession, accessDF: DataFrame, currentDay: String) = {
+  def videoAccessTopNStat(spark: SparkSession, commonDF: DataFrame) = {
 
     // 方式一：使用 DSL 语法实现
-    //    import spark.implicits._
-    //    val videoAccessTopN = accessDF
-    //      .filter(s"day = '20170511' and cmsType = 'video'")
-    //      .groupBy("day", "cmsId")
-    //      .agg(count("cmsId").as("times"))
-    //      .orderBy($"times".desc)
+    import spark.implicits._
+    val videoAccessTopN = commonDF.groupBy("day", "cmsId")
+      .agg(count("cmsId").as("times"))
+      .orderBy($"times".desc)
 
-    accessDF.createOrReplaceTempView("access_log_tmp")
-
-    val videoAccessTopN = spark.sql(
-      s"""
-         | select day,cmsId,count(0) times
-         | from access_log_tmp
-         | where day = '$currentDay' and cmsType = 'video'
-         | group by day,cmsId
-         | order by times desc
-      """.stripMargin)
+    //    accessDF.createOrReplaceTempView("access_log_tmp")
+    //
+    //    val videoAccessTopN = spark.sql(
+    //      s"""
+    //         | select day,cmsId,count(0) times
+    //         | from access_log_tmp
+    //         | where day = '$currentDay' and cmsType = 'video'
+    //         | group by day,cmsId
+    //         | order by times desc
+    //      """.stripMargin)
 
     videoAccessTopN.show(false)
 
@@ -93,13 +98,11 @@ object TopNStatJob {
     * 按照地市统计topN课程
     *
     * @param spark
-    * @param accessDF
+    * @param commonDF
     */
-  def cityAccessTopNStat(spark: SparkSession, accessDF: DataFrame, currentDay: String) = {
+  def cityAccessTopNStat(spark: SparkSession, commonDF: DataFrame) = {
 
-    val cityAccessTopN = accessDF
-      .filter(s"day = '$currentDay' and cmsType = 'video'")
-      .groupBy("day", "city", "cmsId")
+    val cityAccessTopN = commonDF.groupBy("day", "city", "cmsId")
       .agg(count("cmsId").as("times"))
 
     // Window 函数在SparkSQL中的使用
@@ -140,14 +143,12 @@ object TopNStatJob {
     * 按照流量统计
     *
     * @param spark
-    * @param accessDF
+    * @param commonDF
     */
-  def videoTrafficsTopNStat(spark: SparkSession, accessDF: DataFrame, currentDay: String) = {
+  def videoTrafficsTopNStat(spark: SparkSession, commonDF: DataFrame) = {
 
     import spark.implicits._
-    val trafficsAccessTopN = accessDF
-      .filter(s"day = '$currentDay' and cmsType = 'video'")
-      .groupBy("day", "cmsId")
+    val trafficsAccessTopN = commonDF.groupBy("day", "cmsId")
       .agg(sum("traffic").as("traffics"))
       .orderBy($"traffics".desc)
     //      .show(false)
