@@ -1,8 +1,34 @@
-# 本地安装到maven仓库
+# thriftserver/beeline的使用
+    1) 启动thriftserver: 默认端口是10000 ，可以修改
+    2）启动beeline
+    beeline -u jdbc:hive2://localhost:10000 -n hadoop
+
+
+# thriftserver和普通的spark-shell/spark-sql有什么区别？
+1）spark-shell、spark-sql都是一个spark  application；
+2）thriftserver， 不管你启动多少个客户端(beeline/code)，永远都是一个spark application
+	解决了一个数据共享的问题，多个客户端可以共享数据；
+
+# 项目本地安装到maven仓库
 mvn install:install-file -Dfile=D://resources//repository//com/ggstar//ipdatabase//1.0-SNAPSHOT//ipdatabase-1.0-SNAPSHOT.jar -DgroupId=com.ggstar -DartifactId=ipdatabase -Dversion=1.0 -Dpackaging=jar
 
 
-# 打包命令
+# 项目打包命令
+先加入一下插件--》依赖包
+<plugin>
+    <artifactId>maven-assembly-plugin</artifactId>
+    <configuration>
+        <archive>
+            <manifest>
+                <mainClass></mainClass>
+            </manifest>
+        </archive>
+        <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+        </descriptorRefs>
+    </configuration>
+</plugin>
+
 mvn assembly:assembly
 
 

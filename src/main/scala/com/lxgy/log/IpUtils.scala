@@ -3,6 +3,7 @@ package com.lxgy.log
 import com.ggstar.util.ip.IpHelper
 
 /**
+  * IP解析工具类
   * @author Gryant
   */
 object IpUtils {

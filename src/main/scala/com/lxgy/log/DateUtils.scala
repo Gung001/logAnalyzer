@@ -18,7 +18,7 @@ object DateUtils {
   val TARGET_FORMAT_YYYYMMDDHHMMSS = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss")
 
   /**
-    *
+    * 获取时间戳
     * @param time
     */
   def getTime(time: String) = {

@@ -5,6 +5,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{LongType, StringType, StructField, StructType}
 
 /**
+  * 访问日志转换工具类
   * @author Gryant
   */
 object AccessConvertUtil {
