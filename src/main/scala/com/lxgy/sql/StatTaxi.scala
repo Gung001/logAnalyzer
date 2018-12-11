@@ -22,22 +22,25 @@ object StatTaxi {
       .master("local[*]")
       .getOrCreate()
 
+   // 定义输入输出文件路径
     val inputPath = "/spark/data/taxi.csv"
     val outputPath = "/spark/data/output/taxi"
 
+   // 定义数据的schema
     val schema = StructType(Array(
       StructField("id", IntegerType),
       StructField("lat", StringType),
       StructField("lon", StringType),
       StructField("time", StringType)))
 
+   // 读取数据
     spark.read
       .option("header", "false") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
       .schema(schema) // 指定schema
       .csv(inputPath)
-//      .show()
       .createOrReplaceTempView("taxi_tmp")
+//      .show()
 
     // 数据清洗-->得到时间点
     spark.sql(
@@ -57,8 +60,8 @@ object StatTaxi {
         |from taxi_hour_tmp
         |group by id,hour
       """.stripMargin)
+        .createOrReplaceTempView("taxi_count_tmp")
 //      .show(false)
-      .createOrReplaceTempView("taxi_count_tmp")
 
     // 取每个时间段排名前三的出租车及其单数
     val resultDF = spark.sql(
