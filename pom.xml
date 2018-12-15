@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.lxgy</groupId>
   <artifactId>logAnalyzer</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <inceptionYear>2008</inceptionYear>
   <properties>
     <scala.version>2.11.8</scala.version>
@@ -13,6 +13,7 @@
     <hadoop.version>2.7.3</hadoop.version>
     <mysql.connector.version>5.1.27</mysql.connector.version>
     <hbase.version>1.2.0</hbase.version>
+    <storm.version>1.1.1</storm.version>
   </properties>
 
   <repositories>
@@ -33,6 +34,7 @@
 
   <dependencies>
 
+    <!--Spark 引入相关的依赖 Start-->
     <!-- Spark Core -->
     <dependency>
       <groupId>org.apache.spark</groupId>
@@ -68,6 +70,12 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
       <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
       <!--<scope>provided</scope>-->
     </dependency>
 
@@ -164,6 +172,101 @@
       <artifactId>fastjson</artifactId>
       <version>1.1.41</version>
     </dependency>
+    <!--Spark 引入相关的依赖 End-->
+
+    <!--Storm 引入相关的依赖 Start-->
+    <dependency>
+      <groupId>org.apache.storm</groupId>
+      <artifactId>storm-core</artifactId>
+      <version>${storm.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>log4j-over-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.storm</groupId>
+      <artifactId>storm-redis</artifactId>
+      <version>${storm.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.storm</groupId>
+      <artifactId>storm-jdbc</artifactId>
+      <version>${storm.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.storm</groupId>
+      <artifactId>storm-hdfs</artifactId>
+      <version>${storm.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-auth</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.storm</groupId>
+      <artifactId>storm-hbase</artifactId>
+      <version>${storm.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.storm</groupId>
+      <artifactId>storm-kafka</artifactId>
+      <version>${storm.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>16.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-client</artifactId>
+      <version>2.12.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.11</artifactId>
+      <version>0.9.0.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
+    </dependency>
+    <!--storm 引入相关的依赖 End-->
 
   </dependencies>
 
@@ -207,7 +310,7 @@
         </configuration>
       </plugin>
 
-      <plugin>
+      <!--<plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
           <archive>
@@ -217,7 +320,7 @@
           </archive>
           <descriptorRefs>jar-with-dependencies</descriptorRefs>
         </configuration>
-      </plugin>
+      </plugin>-->
     </plugins>
   </build>
   <reporting>
