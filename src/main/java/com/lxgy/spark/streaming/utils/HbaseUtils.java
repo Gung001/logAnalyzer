@@ -1,12 +1,15 @@
 package com.lxgy.spark.streaming.utils;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.ColumnPrefixFilter;
+import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Gryant
@@ -70,6 +73,32 @@ public class HbaseUtils {
         return hTable;
     }
 
+    public void getResult(String tableName, String dayCourse) {
+
+        try {
+
+            HTable t = getTable(tableName);
+            byte[] family = Bytes.toBytes("info");
+            byte[] prefix = Bytes.toBytes(dayCourse);
+            Filter f = new ColumnPrefixFilter(prefix);
+            Scan scan = new Scan();
+            scan.addFamily(family);
+            scan.setFilter(f);
+            scan.setBatch(10);
+            ResultScanner rs = t.getScanner(scan);
+            for (Result r = rs.next(); r != null; r = rs.next()) {
+                for (KeyValue kv : r.raw()) {
+                    System.out.println(JSON.toJSONString(kv));
+                }
+            }
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 添加一条记录到HBase表
      *
@@ -99,7 +128,9 @@ public class HbaseUtils {
 
 //        System.out.println(table.getName().getNameAsString());
 
-        HbaseUtils.newInstance().put("course_click_count", "20181209_88", "info", "click_count", "2");
+//        HbaseUtils.newInstance().put("course_click_count", "20181209_88", "info", "click_count", "2");
+
+        HbaseUtils.newInstance().getResult("course_click_count", "20181207");
         System.out.println("ok...");
     }
 
