@@ -1,6 +1,6 @@
-package com.lxgy.rpc.hrpc.server;
+package com.lxgy.storm.rpc.hrpc.server;
 
-import com.lxgy.rpc.hrpc.server.impl.UserServiceImpl;
+import com.lxgy.storm.rpc.hrpc.server.impl.UserServiceImpl;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.ipc.RPC;
 

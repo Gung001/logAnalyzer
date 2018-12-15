@@ -1,6 +1,6 @@
-package com.lxgy.rpc.hrpc.server.impl;
+package com.lxgy.storm.rpc.hrpc.server.impl;
 
-import com.lxgy.rpc.hrpc.server.IUserService;
+import com.lxgy.storm.rpc.hrpc.server.IUserService;
 
 /**
  * @author Gryant

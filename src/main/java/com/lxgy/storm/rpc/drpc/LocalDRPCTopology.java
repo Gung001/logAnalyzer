@@ -1,7 +1,6 @@
-package com.lxgy.rpc.drpc;
+package com.lxgy.storm.rpc.drpc;
 
 import org.apache.storm.Config;
-import org.apache.storm.ILocalDRPC;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.LocalDRPC;
 import org.apache.storm.drpc.LinearDRPCTopologyBuilder;
