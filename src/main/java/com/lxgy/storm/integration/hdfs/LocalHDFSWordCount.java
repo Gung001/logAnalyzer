@@ -1,11 +1,24 @@
-package com.lxgy.storm.redis;
+package com.lxgy.storm.integration.hdfs;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
-import org.apache.storm.redis.bolt.RedisStoreBolt;
-import org.apache.storm.redis.common.config.JedisPoolConfig;
+import org.apache.storm.hdfs.bolt.HdfsBolt;
+import org.apache.storm.hdfs.bolt.format.DefaultFileNameFormat;
+import org.apache.storm.hdfs.bolt.format.DelimitedRecordFormat;
+import org.apache.storm.hdfs.bolt.format.FileNameFormat;
+import org.apache.storm.hdfs.bolt.format.RecordFormat;
+import org.apache.storm.hdfs.bolt.rotation.FileRotationPolicy;
+import org.apache.storm.hdfs.bolt.rotation.FileSizeRotationPolicy;
+import org.apache.storm.hdfs.bolt.sync.CountSyncPolicy;
+import org.apache.storm.hdfs.bolt.sync.SyncPolicy;
+import org.apache.storm.jdbc.bolt.JdbcInsertBolt;
+import org.apache.storm.jdbc.common.ConnectionProvider;
+import org.apache.storm.jdbc.common.HikariCPConnectionProvider;
+import org.apache.storm.jdbc.mapper.JdbcMapper;
+import org.apache.storm.jdbc.mapper.SimpleJdbcMapper;
 import org.apache.storm.redis.common.mapper.RedisDataTypeDescription;
 import org.apache.storm.redis.common.mapper.RedisStoreMapper;
+import org.apache.storm.shade.com.google.common.collect.Maps;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -26,10 +39,7 @@ import java.util.Random;
 /**
  * @author Gryant
  */
-public class LocalWordCount {
-
-    private static final String REDIS_HOST = "data01";
-    private static final Integer REDIS_PORT = 6379;
+public class LocalHDFSWordCount {
 
     public static class DataSourceSpout extends BaseRichSpout {
 
@@ -118,13 +128,30 @@ public class LocalWordCount {
         builder.setSpout("DataSourceSpout", new DataSourceSpout());
         builder.setBolt("CountBolt", new CountBolt()).shuffleGrouping("DataSourceSpout");
 
-        JedisPoolConfig poolConfig = new JedisPoolConfig.Builder()
-                .setHost(REDIS_HOST).setPort(REDIS_PORT).build();
-        RedisStoreMapper storeMapper = new WordCountStoreMapper();
-        RedisStoreBolt storeBolt = new RedisStoreBolt(poolConfig, storeMapper);
-        builder.setBolt("RedisStoreBolt", storeBolt).shuffleGrouping("CountBolt");
+        // use "|" instead of "," for field delimiter
+        RecordFormat format = new DelimitedRecordFormat()
+                .withFieldDelimiter("|");
+
+        // sync the filesystem after every 1k tuples
+        SyncPolicy syncPolicy = new CountSyncPolicy(1);
+
+        // rotate files when they reach 5MB
+        FileRotationPolicy rotationPolicy = new FileSizeRotationPolicy(5.0f, FileSizeRotationPolicy.Units.MB);
+
+        String outputPath = "/storm/data/";
+        FileNameFormat fileNameFormat = new DefaultFileNameFormat()
+                .withPath(outputPath);
+
+        HdfsBolt hdfsBolt = new HdfsBolt()
+                .withFsUrl("hdfs://data01:8020")
+                .withFileNameFormat(fileNameFormat)
+                .withRecordFormat(format)
+                .withRotationPolicy(rotationPolicy)
+                .withSyncPolicy(syncPolicy);
+
+        builder.setBolt("HdfsBolt", hdfsBolt).shuffleGrouping("CountBolt");
 
         LocalCluster localCluster = new LocalCluster();
-        localCluster.submitTopology("LocalWordCount", new Config(), builder.createTopology());
+        localCluster.submitTopology("LocalHDFSWordCount", new Config(), builder.createTopology());
     }
 }

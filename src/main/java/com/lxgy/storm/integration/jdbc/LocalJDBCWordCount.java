@@ -1,4 +1,4 @@
-package com.lxgy.storm.jdbc;
+package com.lxgy.storm.integration.jdbc;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
@@ -7,8 +7,6 @@ import org.apache.storm.jdbc.common.ConnectionProvider;
 import org.apache.storm.jdbc.common.HikariCPConnectionProvider;
 import org.apache.storm.jdbc.mapper.JdbcMapper;
 import org.apache.storm.jdbc.mapper.SimpleJdbcMapper;
-import org.apache.storm.redis.bolt.RedisStoreBolt;
-import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.redis.common.mapper.RedisDataTypeDescription;
 import org.apache.storm.redis.common.mapper.RedisStoreMapper;
 import org.apache.storm.shade.com.google.common.collect.Maps;
@@ -32,7 +30,7 @@ import java.util.Random;
 /**
  * @author Gryant
  */
-public class LocalWordCount {
+public class LocalJDBCWordCount {
 
     private static final String REDIS_HOST = "data01";
     private static final Integer REDIS_PORT = 6379;
@@ -140,6 +138,6 @@ public class LocalWordCount {
         builder.setBolt("JdbcInsertBolt", userPersistanceBolt).shuffleGrouping("CountBolt");
 
         LocalCluster localCluster = new LocalCluster();
-        localCluster.submitTopology("LocalWordCount", new Config(), builder.createTopology());
+        localCluster.submitTopology("LocalJDBCWordCount", new Config(), builder.createTopology());
     }
 }
